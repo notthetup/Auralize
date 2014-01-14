@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		82642D2C1884E6B8006F1432 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82642D291884E6B8006F1432 /* AudioToolbox.framework */; };
+		82642D2E1884E6B8006F1432 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82642D2B1884E6B8006F1432 /* CoreAudio.framework */; };
 		82A2534C1884D19B0021321A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A2534B1884D19B0021321A /* Foundation.framework */; };
 		82A2534E1884D19B0021321A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A2534D1884D19B0021321A /* CoreGraphics.framework */; };
 		82A253501884D19B0021321A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82A2534F1884D19B0021321A /* UIKit.framework */; };
@@ -35,6 +37,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		82642D291884E6B8006F1432 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		82642D2A1884E6B8006F1432 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		82642D2B1884E6B8006F1432 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		82A253481884D19B0021321A /* Auralize.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Auralize.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		82A2534B1884D19B0021321A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		82A2534D1884D19B0021321A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -62,6 +67,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82642D2C1884E6B8006F1432 /* AudioToolbox.framework in Frameworks */,
+				82642D2E1884E6B8006F1432 /* CoreAudio.framework in Frameworks */,
 				82A2534E1884D19B0021321A /* CoreGraphics.framework in Frameworks */,
 				82A253501884D19B0021321A /* UIKit.framework in Frameworks */,
 				82A2534C1884D19B0021321A /* Foundation.framework in Frameworks */,
@@ -103,6 +110,9 @@
 		82A2534A1884D19B0021321A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				82642D291884E6B8006F1432 /* AudioToolbox.framework */,
+				82642D2A1884E6B8006F1432 /* AudioUnit.framework */,
+				82642D2B1884E6B8006F1432 /* CoreAudio.framework */,
 				82A2534B1884D19B0021321A /* Foundation.framework */,
 				82A2534D1884D19B0021321A /* CoreGraphics.framework */,
 				82A2534F1884D19B0021321A /* UIKit.framework */,
@@ -203,6 +213,9 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = "CrayonIO Pte. Ltd";
 				TargetAttributes = {
+					82A253471884D19B0021321A = {
+						DevelopmentTeam = 2KKN982YYH;
+					};
 					82A2536B1884D19B0021321A = {
 						TestTargetID = 82A253471884D19B0021321A;
 					};
@@ -393,10 +406,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Auralize/Auralize-Prefix.pch";
 				INFOPLIST_FILE = "Auralize/Auralize-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -406,10 +422,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Auralize/Auralize-Prefix.pch";
 				INFOPLIST_FILE = "Auralize/Auralize-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -475,6 +494,7 @@
 				82A2537F1884D19B0021321A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		82A253801884D19B0021321A /* Build configuration list for PBXNativeTarget "AuralizeTests" */ = {
 			isa = XCConfigurationList;
@@ -483,6 +503,7 @@
 				82A253821884D19B0021321A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
