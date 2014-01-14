@@ -24,23 +24,12 @@ static const double preferredSampleRate = 44100;
 
 
 @synthesize sampleRate = _sampleRate;
-@synthesize remoteIOUnit = remoteIOUnit;
-
-
-
-- (id)init{
-    self = [super init];
-    if (self) {
-        avAudioSessionInputChoice = [NSArray arrayWithObjects:AVAudioSessionPortUSBAudio, AVAudioSessionPortHeadsetMic, AVAudioSessionPortBluetoothHFP, AVAudioSessionPortLineIn, nil];
-    }
-    return self;
-}
+@synthesize remoteIOUnit = remoteIO;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-    
     [self initAudioProcessing];
 }
 
@@ -72,12 +61,7 @@ static const double preferredSampleRate = 44100;
 - (void) initAudioProcessing{
     
     [self setupAudioSession];
-    [self hookUpAudioChain];
-    
-    NSError *err = nil;
-    if (![session setActive:YES error:&err]){
-        NSLog(@"Couldn't activate audio session: %@", err);
-    }
+    //[self hookUpAudioChain];
 }
 
 - (void) logChoicesAndRoutesForSession{
@@ -117,8 +101,9 @@ static const double preferredSampleRate = 44100;
 - (void) setupAudioSession{
     
     NSError *err = nil;
-    session = [AVAudioSession sharedInstance];
-    
+    avAudioSessionInputChoice = [NSArray arrayWithObjects:AVAudioSessionPortUSBAudio, AVAudioSessionPortHeadsetMic, AVAudioSessionPortBluetoothHFP, AVAudioSessionPortLineIn, nil];
+
+    session = [AVAudioSession sharedInstance];    
     
     if (![session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&err]){
         NSLog(@"Couldn't set category audio session: %@", err);
@@ -129,16 +114,25 @@ static const double preferredSampleRate = 44100;
     }
     //NSLog(@" %@", session.mode);
     
+    if (![session setActive:YES error:&err]){
+        NSLog(@"Couldn't activate audio session: %@", err);
+    }
+    
     AVAudioSessionPortDescription* preferedInput = NULL;
     
-    for (AVAudioSessionPortDescription * inputChoice in avAudioSessionInputChoice){
+    for (NSString * inputChoice in avAudioSessionInputChoice){
         if (preferedInput == NULL)
             for (AVAudioSessionPortDescription *input in [[AVAudioSession sharedInstance] availableInputs]) {
-                if ([input.portName isEqualToString:inputChoice.portName]){
+                if ([input.portType isEqualToString:inputChoice]){
                     preferedInput = input;
+                    NSLog(@"Preferred Input is %@", preferedInput);
                     break;
                 }
             }
+    }
+    
+    if (![session setPreferredInput:preferedInput error:&err]){
+        NSLog(@"Couldn't set prefered input for session: %@", err);
     }
     
     if (![session setPreferredIOBufferDuration:preferredBufferSize error:&err]){
