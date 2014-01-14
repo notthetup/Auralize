@@ -33,5 +33,7 @@
 
 @interface CIViewController : UIViewController
 
+@property (readonly) double sampleRate;
+@property (readonly) AudioUnit remoteIOUnit;
 
 @end
