@@ -16,15 +16,27 @@
     NSArray* avAudioSessionInputChoice;
     AVAudioSession* session;
     AudioUnit remoteIOUnit;
-    
 }
 
-static const double preferredBufferSize = 0.0232;
-static const double preferredSampleRate = 44100;
+static const double PREFERED_BUFFER_SIZE = 0.0232;
+static const double PREFERED_SAMPLE_RATE = 44100;
+
+static const int INPUT_NUM_CHANNELS = 1;
+static const int OUTPUT_NUM_CHANNELS = 1;
+
+static const int BYTES_PER_FLOAT = sizeof(float);
+static const int BYTES_PER_SHORT = sizeof(short);
+static const int BITS_PER_BYTE = 8;
+
+static const AudioUnitElement INPUT_BUS = 1;
+static const AudioUnitElement OUTPUT_BUS = 0;
 
 
 @synthesize sampleRate = _sampleRate;
-@synthesize remoteIOUnit = remoteIO;
+@synthesize remoteIOUnit = remoteIOUnit;
+
+//@synthesize effectState = _effectState;
+
 
 - (void)viewDidLoad
 {
@@ -51,17 +63,21 @@ static const double preferredSampleRate = 44100;
 
 
 - (void) playAudioChain{
+    OSStatus status = AudioOutputUnitStart(remoteIOUnit);
+    assert(status == noErr);
+    
     
 }
 
 - (void) pauseAudioChain{
-    
+    OSStatus status = AudioOutputUnitStop(remoteIOUnit);
+    assert(status == noErr);
 }
 
 - (void) initAudioProcessing{
     
     [self setupAudioSession];
-    //[self hookUpAudioChain];
+    [self hookUpAudioChain];
 }
 
 - (void) logChoicesAndRoutesForSession{
@@ -97,13 +113,12 @@ static const double preferredSampleRate = 44100;
     NSLog(@"--------------------------------------------------");
     
 }
-
 - (void) setupAudioSession{
     
     NSError *err = nil;
     avAudioSessionInputChoice = [NSArray arrayWithObjects:AVAudioSessionPortUSBAudio, AVAudioSessionPortHeadsetMic, AVAudioSessionPortBluetoothHFP, AVAudioSessionPortLineIn, nil];
-
-    session = [AVAudioSession sharedInstance];    
+    
+    session = [AVAudioSession sharedInstance];
     
     if (![session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&err]){
         NSLog(@"Couldn't set category audio session: %@", err);
@@ -135,27 +150,24 @@ static const double preferredSampleRate = 44100;
         NSLog(@"Couldn't set prefered input for session: %@", err);
     }
     
-    if (![session setPreferredIOBufferDuration:preferredBufferSize error:&err]){
+    if (![session setPreferredIOBufferDuration:PREFERED_BUFFER_SIZE error:&err]){
         NSLog(@"Couldn't set prefered io buffer size for session: %@", err);
     }
     NSLog(@"Buffer size is now %f", session.preferredIOBufferDuration);
     
-    if (![session setPreferredSampleRate: preferredSampleRate error: &err])
+    if (![session setPreferredSampleRate: PREFERED_SAMPLE_RATE error: &err])
         NSLog(@"Couldn't set prefered sample rate for session: %@", err);
     
     _sampleRate = session.sampleRate;
     
-    [self logChoicesAndRoutesForSession];
+    //[self logChoicesAndRoutesForSession];
     
     
 }
 
 - (void) hookUpAudioChain{
     
-    
     OSStatus status;
-    AudioUnitElement outputBus = 0;
-    AudioUnitElement inputBus = 1;
     
     // Describe audio component
     AudioComponentDescription desc;
@@ -173,42 +185,61 @@ static const double preferredSampleRate = 44100;
     assert(status == noErr);
     
     // Enable IO for recording
-    UInt32 flag = 1;
+    UInt32 one = 1;
     status = AudioUnitSetProperty(remoteIOUnit,
                                   kAudioOutputUnitProperty_EnableIO,
                                   kAudioUnitScope_Input,
-                                  inputBus,
-                                  &flag,
-                                  sizeof(flag));
+                                  INPUT_BUS,
+                                  &one,
+                                  sizeof(one));
+    assert(status == noErr);
+    
+    status = AudioUnitSetProperty(remoteIOUnit,
+                                  kAudioOutputUnitProperty_EnableIO,
+                                  kAudioUnitScope_Output,
+                                  OUTPUT_BUS,
+                                  &one,
+                                  sizeof(one));
     assert(status == noErr);
     
     // Describe format
-    AudioStreamBasicDescription audioFormat;
-    audioFormat.mSampleRate         = 44100.00;
-    audioFormat.mFormatID           = kAudioFormatLinearPCM;
-    audioFormat.mFormatFlags        = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-    audioFormat.mFramesPerPacket    = 1;
-    audioFormat.mChannelsPerFrame   = 1;
-    audioFormat.mBitsPerChannel     = 16;
-    audioFormat.mBytesPerPacket     = 2;
-    audioFormat.mBytesPerFrame      = 2;
+    AudioStreamBasicDescription inputAudioFormat;
+    inputAudioFormat.mSampleRate         = _sampleRate;
+    inputAudioFormat.mFormatID           = kAudioFormatLinearPCM;
+    inputAudioFormat.mFormatFlags        = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+    inputAudioFormat.mBytesPerPacket     = BYTES_PER_FLOAT;
+	inputAudioFormat.mFramesPerPacket    = 1;
+	inputAudioFormat.mBytesPerFrame      = BYTES_PER_FLOAT;
+	inputAudioFormat.mChannelsPerFrame   = INPUT_NUM_CHANNELS;
+	inputAudioFormat.mBitsPerChannel     = BYTES_PER_FLOAT * BITS_PER_BYTE;
+    
+    // Describe format
+    AudioStreamBasicDescription outputAudioFormat;
+    outputAudioFormat.mSampleRate         = _sampleRate;
+    outputAudioFormat.mFormatID           = kAudioFormatLinearPCM;
+    outputAudioFormat.mFormatFlags        = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+    outputAudioFormat.mBytesPerPacket     = BYTES_PER_FLOAT;
+	outputAudioFormat.mFramesPerPacket    = 1;
+	outputAudioFormat.mBytesPerFrame      = BYTES_PER_FLOAT;
+	outputAudioFormat.mChannelsPerFrame   = OUTPUT_NUM_CHANNELS;
+	inputAudioFormat.mBitsPerChannel     = BYTES_PER_FLOAT * BITS_PER_BYTE;
     
     
     // Apply format
     status = AudioUnitSetProperty(remoteIOUnit,
                                   kAudioUnitProperty_StreamFormat,
                                   kAudioUnitScope_Output,
-                                  inputBus,
-                                  &audioFormat,
-                                  sizeof(audioFormat));
+                                  INPUT_BUS,
+                                  &inputAudioFormat,
+                                  sizeof(inputAudioFormat));
     assert(status == noErr);
     
     status = AudioUnitSetProperty(remoteIOUnit,
                                   kAudioUnitProperty_StreamFormat,
                                   kAudioUnitScope_Input,
-                                  outputBus,
-                                  &audioFormat,
-                                  sizeof(audioFormat));
+                                  OUTPUT_BUS,
+                                  &inputAudioFormat,
+                                  sizeof(inputAudioFormat));
     assert(status == noErr);
     
     
@@ -220,8 +251,8 @@ static const double preferredSampleRate = 44100;
     callbackStruct.inputProcRefCon = (__bridge void *)(self);
     status = AudioUnitSetProperty(remoteIOUnit,
                                   kAudioUnitProperty_SetRenderCallback,
-                                  kAudioUnitScope_Global,
-                                  outputBus,
+                                  kAudioUnitScope_Input,
+                                  OUTPUT_BUS,
                                   &callbackStruct,
                                   sizeof(callbackStruct));
     assert(status == noErr);
@@ -229,6 +260,7 @@ static const double preferredSampleRate = 44100;
     // Initialise
     status = AudioUnitInitialize(remoteIOUnit);
     assert(status == noErr);
+
 }
 
 OSStatus playbackCallback ( void                        *inRefCon,
@@ -239,12 +271,24 @@ OSStatus playbackCallback ( void                        *inRefCon,
                            AudioBufferList             *ioData
                            ){
     
-    CIViewController *this = (__bridge CIViewController *)inRefCon;
-    UInt32 outBusNumber = 1;
-    
-    AudioUnitRender(this.remoteIOUnit,ioActionFlags,inTimeStamp,outBusNumber, inNumberFrames, ioData);
-    
-    return noErr;
+    @autoreleasepool {
+        
+        CIViewController *this = (__bridge CIViewController *)inRefCon;
+        //EffectState *effectState = (EffectState*) inRefCon;
+        
+        /*CheckError(AudioUnitRender(this.remoteIOUnit,
+                                   ioActionFlags,
+                                   inTimeStamp,
+                                   INPUT_BUS,
+                                   inNumberFrames,
+                                   ioData),
+                   "Couldn't render from RemoteIO unit");*/
+        
+        AudioUnitRender(this.remoteIOUnit,ioActionFlags,inTimeStamp,INPUT_BUS, inNumberFrames, ioData);
+        
+        return noErr;
+        
+    }
     
 }
 @end
